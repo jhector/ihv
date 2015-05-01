@@ -66,9 +66,9 @@ CREATE TABLE `reason_free` (
 
 CREATE TABLE `reason_realloc` (
     `snapshot_id` INT(11) unsigned NOT NULL,
-    `address` BIGINT unsigned NOT NULL,
-    `old_size` BIGINT unsigned NOT NULL,
-    `new_size` BIGINT unsigned NOT NULL,
+    `size` BIGINT unsigned NOT NULL,
+    `old_address` BIGINT unsigned NOT NULL,
+    `new_address` BIGINT unsigned NOT NULL,
     PRIMARY KEY (`snapshot_id`, `address`),
     KEY(`snapshot_id`),
     CONSTRAINT `fk_reason_realloc_snapshot`
