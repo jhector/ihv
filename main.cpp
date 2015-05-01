@@ -24,8 +24,8 @@
 #define STR_FREE "free"
 #define STR_REALLOC "realloc"
 
-VOID *range_start = (VOID*)0x0060d000;
-VOID *range_end = (VOID*)0x0062e000;
+VOID *range_start = (VOID*)0x00400000;
+VOID *range_end = (VOID*)0x0082e000;
 
 std::map<void *, unsigned char> mem_queue;
 MySQL *db;
@@ -83,7 +83,6 @@ VOID* WrapperMalloc(CONTEXT *ctxt, AFUNPTR pf_malloc, size_t size, THREADID tid)
 
     CALL_APPLICATION_FUNCTION_PARAM param;
     memset((void*)&param, 0x00, sizeof(param));
-    param.native = 1;
 
     flush_queue(tid);
 
@@ -108,7 +107,6 @@ VOID WrapperFree(CONTEXT *ctxt, AFUNPTR pf_free, void *ptr, THREADID tid)
 {
     CALL_APPLICATION_FUNCTION_PARAM param;
     memset((void*)&param, 0x00, sizeof(param));
-    param.native = 1;
 
     flush_queue(tid);
 
@@ -134,7 +132,6 @@ VOID* WrapperCalloc(CONTEXT *ctxt, AFUNPTR pf_calloc, size_t nmemb, size_t size,
 
     CALL_APPLICATION_FUNCTION_PARAM param;
     memset((void*)&param, 0x00, sizeof(param));
-    param.native = 1;
 
     flush_queue(tid);
 
@@ -163,7 +160,6 @@ VOID* WrapperRealloc(CONTEXT *ctxt, AFUNPTR pf_realloc, void *ptr, size_t size,
 
     CALL_APPLICATION_FUNCTION_PARAM param;
     memset((void*)&param, 0x00, sizeof(param));
-    param.native = 1;
 
     flush_queue(tid);
 
