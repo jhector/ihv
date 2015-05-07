@@ -69,8 +69,10 @@ CREATE TABLE `reason_realloc` (
     `size` BIGINT unsigned NOT NULL,
     `old_address` BIGINT unsigned NOT NULL,
     `new_address` BIGINT unsigned NOT NULL,
-    PRIMARY KEY (`snapshot_id`, `address`),
+    PRIMARY KEY (`snapshot_id`, `new_address`),
     KEY(`snapshot_id`),
+    KEY(`new_address`),
+    KEY(`old_address`),
     CONSTRAINT `fk_reason_realloc_snapshot`
         FOREIGN KEY (`snapshot_id`)
         REFERENCES snapshot (`snapshot_id`)
