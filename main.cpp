@@ -93,10 +93,12 @@ VOID* WrapperMalloc(CONTEXT *ctxt, AFUNPTR pf_malloc, size_t size, THREADID tid)
             PIN_PARG(void *), &res, PIN_PARG(size_t), size,
             PIN_PARG_END());
 
-    PIN_GetLock(&lock, tid+1);
-    snapshot_t id = db->addSnapshot(snapshot_reason::MALLOC);
-    db->addReasonMalloc(id, res, size);
-    PIN_ReleaseLock(&lock);
+    if ((ADDRINT)range_end - (ADDRINT)range_start) {
+        PIN_GetLock(&lock, tid+1);
+        snapshot_t id = db->addSnapshot(snapshot_reason::MALLOC);
+        db->addReasonMalloc(id, res, size);
+        PIN_ReleaseLock(&lock);
+    }
 
     flush_queue(tid);
 
@@ -115,10 +117,12 @@ VOID WrapperFree(CONTEXT *ctxt, AFUNPTR pf_free, void *ptr, THREADID tid)
             PIN_PARG(void *), ptr,
             PIN_PARG_END());
 
-    PIN_GetLock(&lock, tid+1);
-    snapshot_t id = db->addSnapshot(snapshot_reason::FREE);
-    db->addReasonFree(id, ptr);
-    PIN_ReleaseLock(&lock);
+    if ((ADDRINT)range_end - (ADDRINT)range_start) {
+        PIN_GetLock(&lock, tid+1);
+        snapshot_t id = db->addSnapshot(snapshot_reason::FREE);
+        db->addReasonFree(id, ptr);
+        PIN_ReleaseLock(&lock);
+    }
 
     flush_queue(tid);
 }
@@ -139,10 +143,12 @@ VOID* WrapperCalloc(CONTEXT *ctxt, AFUNPTR pf_calloc, size_t nmemb, size_t size,
             PIN_PARG(size_t), size,
             PIN_PARG_END());
 
-    PIN_GetLock(&lock, tid+1);
-    snapshot_t id = db->addSnapshot(snapshot_reason::CALLOC);
-    db->addReasonCalloc(id, res, nmemb, size);
-    PIN_ReleaseLock(&lock);
+    if ((ADDRINT)range_end - (ADDRINT)range_start) {
+        PIN_GetLock(&lock, tid+1);
+        snapshot_t id = db->addSnapshot(snapshot_reason::CALLOC);
+        db->addReasonCalloc(id, res, nmemb, size);
+        PIN_ReleaseLock(&lock);
+    }
 
     flush_queue(tid);
 
@@ -165,10 +171,12 @@ VOID* WrapperRealloc(CONTEXT *ctxt, AFUNPTR pf_realloc, void *ptr, size_t size,
             PIN_PARG(void *), ptr, PIN_PARG(size_t), size,
             PIN_PARG_END());
 
-    PIN_GetLock(&lock, tid+1);
-    snapshot_t id = db->addSnapshot(snapshot_reason::REALLOC);
-    db->addReasonRealloc(id, ptr, res, size);
-    PIN_ReleaseLock(&lock);
+    if ((ADDRINT)range_end - (ADDRINT)range_start) {
+        PIN_GetLock(&lock, tid+1);
+        snapshot_t id = db->addSnapshot(snapshot_reason::REALLOC);
+        db->addReasonRealloc(id, ptr, res, size);
+        PIN_ReleaseLock(&lock);
+    }
 
     flush_queue(tid);
 
