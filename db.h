@@ -5,7 +5,7 @@
 
 typedef unsigned int snapshot_t;
 
-namespace snapshot_reason{
+namespace snapshot_reason {
 enum type_t{
     MALLOC, FREE, CALLOC, REALLOC, MEM_WRITE
 };
@@ -17,21 +17,21 @@ class Database{
         ~Database() {};
 
         // Write snapshot, returns the id of the new snapshot
-        virtual snapshot_t add_snapshot(snapshot_reason::type_t type) = 0;
+        virtual snapshot_t addSnapshot(snapshot_reason::type_t type) = 0;
 
         // Adds the reason to a snapshot
-        virtual void add_reason_malloc(
+        virtual void addReasonMalloc(
             snapshot_t snapshot_id, void *mem, size_t size) = 0;
-        virtual void add_reason_free(
+        virtual void addReasonFree(
             snapshot_t snapshot_id, void *mem) = 0;
-        virtual void add_reason_calloc(
+        virtual void addReasonCalloc(
             snapshot_t snapshot_id, void *mem, size_t nmemb, size_t size) = 0;
-        virtual void add_reason_realloc(
+        virtual void addReasonRealloc(
             snapshot_t snapshot_id, void *old_mem, void *new_mem,
             size_t new_size) = 0;
 
         // Add memory write operations
-        virtual void add_memory_writes(
+        virtual void addMemoryWrites(
             snapshot_t snapshot_id,
-            std::map<void *, unsigned char>& writes) = 0;
+            const std::map<void *, unsigned char>& writes) = 0;
 };

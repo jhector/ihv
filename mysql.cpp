@@ -109,7 +109,7 @@ MySQL::~MySQL()
     mysql_stmt_close(add_memory_write_);
 }
 
-snapshot_t MySQL::add_snapshot(snapshot_reason::type_t type)
+snapshot_t MySQL::addSnapshot(snapshot_reason::type_t type)
 {
     MYSQL_BIND bind;
     memset(&bind, 0, sizeof(MYSQL_BIND));
@@ -125,7 +125,7 @@ snapshot_t MySQL::add_snapshot(snapshot_reason::type_t type)
     return mysql_insert_id(db_);
 }
 
-void MySQL::add_reason_malloc(snapshot_t snapshot_id, void *mem, size_t size)
+void MySQL::addReasonMalloc(snapshot_t snapshot_id, void *mem, size_t size)
 {
     MYSQL_BIND bind[3];
     memset(&bind, 0, sizeof(MYSQL_BIND)*3);
@@ -150,10 +150,10 @@ void MySQL::add_reason_malloc(snapshot_t snapshot_id, void *mem, size_t size)
         fatal_error(db_);
 
     // Create new block
-    create_new_block(snapshot_id, mem, size);
+    createNewBlock(snapshot_id, mem, size);
 }
 
-void MySQL::add_reason_free(snapshot_t snapshot_id, void *mem)
+void MySQL::addReasonFree(snapshot_t snapshot_id, void *mem)
 {
     MYSQL_BIND bind[2];
 
@@ -175,10 +175,10 @@ void MySQL::add_reason_free(snapshot_t snapshot_id, void *mem)
 
     // Free block
     if(mem)
-        free_block(snapshot_id, mem);
+        freeBlock(snapshot_id, mem);
 }
 
-void MySQL::add_reason_calloc(
+void MySQL::addReasonCalloc(
     snapshot_t snapshot_id, void *mem, size_t nmemb, size_t size)
 {
     MYSQL_BIND bind[4];
@@ -209,10 +209,10 @@ void MySQL::add_reason_calloc(
         fatal_error(db_);
 
     // Create new block
-    create_new_block(snapshot_id, mem, nmemb * size);
+    createNewBlock(snapshot_id, mem, nmemb * size);
 }
 
-void MySQL::add_reason_realloc(
+void MySQL::addReasonRealloc(
     snapshot_t snapshot_id, void *old_mem, void *new_mem, size_t new_size)
 {
     MYSQL_BIND bind[4];
@@ -246,16 +246,16 @@ void MySQL::add_reason_realloc(
     // is performed.
     // If old_mem is equal to zero, a malloc is performed.
     if (!new_size && old_mem) {
-        free_block(snapshot_id, old_mem);
+        freeBlock(snapshot_id, old_mem);
     } else if (new_size && !old_mem) {
-        create_new_block(snapshot_id, new_mem, new_size);
+        createNewBlock(snapshot_id, new_mem, new_size);
     } else {
-        free_block(snapshot_id, old_mem);
-        create_new_block(snapshot_id, new_mem, new_size);
+        freeBlock(snapshot_id, old_mem);
+        createNewBlock(snapshot_id, new_mem, new_size);
     }
 }
 
-void MySQL::add_memory_writes(
+void MySQL::addMemoryWrites(
     snapshot_t snapshot_id, const std::map<void *, unsigned char>& writes)
 {
     MYSQL_BIND bind[3];
@@ -288,7 +288,7 @@ void MySQL::add_memory_writes(
     }
 }
 
-void MySQL::create_new_block(snapshot_t snapshot_id, void *address, size_t size)
+void MySQL::createNewBlock(snapshot_t snapshot_id, void *address, size_t size)
 {
     MYSQL_BIND bind[3];
     memset(&bind, 0, sizeof(MYSQL_BIND)*3);
@@ -313,7 +313,7 @@ void MySQL::create_new_block(snapshot_t snapshot_id, void *address, size_t size)
         fatal_error(db_);
 }
 
-void MySQL::free_block(snapshot_t snapshot_id, void *address)
+void MySQL::freeBlock(snapshot_t snapshot_id, void *address)
 {
     MYSQL_BIND bind[2];
     memset(&bind, 0, sizeof(MYSQL_BIND)*2);
