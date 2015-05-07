@@ -213,8 +213,8 @@ void MySQL::addReasonCalloc(
     bind[3].buffer = &size;
     bind[3].buffer_length = sizeof(size_t);
 
-    if (mysql_stmt_bind_param(add_reason_malloc_, bind) ||
-            mysql_stmt_execute(add_reason_malloc_))
+    if (mysql_stmt_bind_param(add_reason_calloc_, bind) ||
+            mysql_stmt_execute(add_reason_calloc_))
         fatal_error(db_, __LINE__);
 
     // Create new block
@@ -247,8 +247,8 @@ void MySQL::addReasonRealloc(
     bind[3].buffer = &new_size;
     bind[3].buffer_length = sizeof(size_t);
 
-    if (mysql_stmt_bind_param(add_reason_malloc_, bind) ||
-            mysql_stmt_execute(add_reason_malloc_))
+    if (mysql_stmt_bind_param(add_reason_realloc_, bind) ||
+            mysql_stmt_execute(add_reason_realloc_))
         fatal_error(db_, __LINE__);
 
     // Realloc has a special logic. If new_size is equal to zero, a free
@@ -291,8 +291,8 @@ void MySQL::addMemoryWrites(
             it != writes.end(); it++) {
         current_addr = it -> first;
         current_char = it -> second;
-        if (mysql_stmt_bind_param(add_reason_malloc_, bind) ||
-                    mysql_stmt_execute(add_reason_malloc_))
+        if (mysql_stmt_bind_param(add_memory_write_, bind) ||
+                    mysql_stmt_execute(add_memory_write_))
                 fatal_error(db_, __LINE__);
     }
 }
@@ -317,8 +317,8 @@ void MySQL::createNewBlock(snapshot_t snapshot_id, void *address, size_t size)
     bind[2].buffer = &size;
     bind[2].buffer_length = sizeof(size_t);
 
-    if (mysql_stmt_bind_param(add_reason_malloc_, bind) ||
-            mysql_stmt_execute(add_reason_malloc_))
+    if (mysql_stmt_bind_param(create_new_block_, bind) ||
+            mysql_stmt_execute(create_new_block_))
         fatal_error(db_, __LINE__);
 }
 
@@ -337,7 +337,7 @@ void MySQL::freeBlock(snapshot_t snapshot_id, void *address)
     bind[1].buffer = &address;
     bind[1].buffer_length = sizeof(void*);
 
-    if (mysql_stmt_bind_param(add_reason_malloc_, bind) ||
-            mysql_stmt_execute(add_reason_malloc_))
+    if (mysql_stmt_bind_param(free_block_, bind) ||
+            mysql_stmt_execute(free_block_))
         fatal_error(db_, __LINE__);
 }
