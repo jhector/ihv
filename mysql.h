@@ -11,6 +11,15 @@ class MySQL: public Database{
         MYSQL_STMT *add_reason_calloc_;
         MYSQL_STMT *add_reason_realloc_;
         MYSQL_STMT *add_memory_write_;
+        MYSQL_STMT *create_new_block_;
+        MYSQL_STMT *free_block_;
+
+        // Helper functions
+        void create_new_block(
+            snapshot_t snapshot_id, void *address, size_t size);
+        void free_block(
+            snapshot_t snapshot_id, void *address);
+
     public:
         MySQL(const char *host, const char *user,
             const char *password, const char *db);
@@ -28,6 +37,6 @@ class MySQL: public Database{
             void *new_mem, size_t new_size);
 
         // Add memory write operations
-        void add_memory_writes(snapshot_t snapshot_id, std::map<void *,
+        void add_memory_writes(snapshot_t snapshot_id, const std::map<void *,
             unsigned char>& writes);
 };
