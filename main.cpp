@@ -1,5 +1,6 @@
 #include "pin.H"
 
+#include <sys/syscall.h>
 #include <stdint.h>
 
 #include <algorithm>
@@ -24,11 +25,13 @@
 #define STR_FREE "free"
 #define STR_REALLOC "realloc"
 
-VOID *range_start = (VOID*)0x00400000;
-VOID *range_end = (VOID*)0x0082e000;
+VOID *range_start = NULL;
+VOID *range_end = NULL;
 
 std::map<void *, unsigned char> mem_queue;
 MySQL *db;
+
+bool sys_brk_called = false;
 
 PIN_LOCK lock;
 
@@ -71,7 +74,6 @@ VOID RecordMemWrite(VOID *ip, VOID *addr, ADDRINT size, THREADID tid)
         }
 
         mem_queue[((char*)addr+i)] = 0;
-	printf("writing: %p <- 0x%02x\n", (char*)addr+i, *((unsigned char*)addr+i));
     }
 
     PIN_ReleaseLock(&lock);
@@ -98,8 +100,6 @@ VOID* WrapperMalloc(CONTEXT *ctxt, AFUNPTR pf_malloc, size_t size, THREADID tid)
 
     flush_queue(tid);
 
-    printf("malloc(%p) = %p\n", (void*)size, res);
-
     return res;
 }
 
@@ -121,8 +121,6 @@ VOID WrapperFree(CONTEXT *ctxt, AFUNPTR pf_free, void *ptr, THREADID tid)
     PIN_ReleaseLock(&lock);
 
     flush_queue(tid);
-
-    printf("free(%p)\n", ptr);
 }
 
 VOID* WrapperCalloc(CONTEXT *ctxt, AFUNPTR pf_calloc, size_t nmemb, size_t size,
@@ -147,8 +145,6 @@ VOID* WrapperCalloc(CONTEXT *ctxt, AFUNPTR pf_calloc, size_t nmemb, size_t size,
     PIN_ReleaseLock(&lock);
 
     flush_queue(tid);
-
-    printf("calloc(%p, %p) = %p\n", (void*)nmemb, (void*)size, res);
 
     return res;
 }
@@ -176,9 +172,12 @@ VOID* WrapperRealloc(CONTEXT *ctxt, AFUNPTR pf_realloc, void *ptr, size_t size,
 
     flush_queue(tid);
 
-    printf("realloc(%p, %p) = %p\n", ptr, (void*)size, res);
-
     return res;
+}
+
+VOID SysBrk(ADDRINT arg0)
+{
+    sys_brk_called = true;
 }
 
 /* ===================================================================== */
@@ -263,6 +262,30 @@ VOID ImageLoad(IMG img, VOID *v)
     }
 }
 
+VOID SyscallEntry(THREADID tid, CONTEXT *ctxt, SYSCALL_STANDARD std, VOID *v)
+{
+    PIN_GetLock(&lock, tid+1);
+    if (PIN_GetSyscallNumber(ctxt, std) == SYS_brk)
+        SysBrk(PIN_GetSyscallArgument(ctxt, std, 0));
+
+    PIN_ReleaseLock(&lock);
+}
+
+VOID SyscallLeave(THREADID tid, CONTEXT *ctxt, SYSCALL_STANDARD std, VOID *v)
+{
+    PIN_GetLock(&lock, tid+1);
+    if (sys_brk_called) {
+        if (!range_start)
+            range_start = (VOID*)PIN_GetSyscallReturn(ctxt, std);
+
+        range_end = (VOID*)PIN_GetSyscallReturn(ctxt, std);
+
+        sys_brk_called = false;
+    }
+
+    PIN_ReleaseLock(&lock);
+}
+
 /* ===================================================================== */
 
 VOID Fini(INT32 code, VOID *v)
@@ -296,9 +319,12 @@ int main(int argc, char *argv[])
 
     db = new MySQL("localhost", "root", "root", "ihv");
 
-    // Register Image to be called to instrument functions.
     IMG_AddInstrumentFunction(ImageLoad, 0);
     INS_AddInstrumentFunction(Instruction, 0);
+
+    PIN_AddSyscallEntryFunction(SyscallEntry, 0);
+    PIN_AddSyscallExitFunction(SyscallLeave, 0);
+
     PIN_AddFiniFunction(Fini, 0);
 
     // Never returns
