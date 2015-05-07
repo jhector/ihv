@@ -32,7 +32,7 @@ CREATE TABLE `block` (
 CREATE TABLE `memory_write` (
     `snapshot_id` INT(11) unsigned NOT NULL,
     `address` BIGINT unsigned NOT NULL,
-    `value` CHAR(1) NOT NULL,
+    `value` BINARY(1) NOT NULL,
     PRIMARY KEY(`snapshot_id`, `address`),
     CONSTRAINT `fk_memory_write_snapshot`
         FOREIGN KEY (`snapshot_id`)

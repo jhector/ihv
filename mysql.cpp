@@ -283,7 +283,7 @@ void MySQL::addMemoryWrites(
     bind[1].buffer_length = sizeof(void*);
 
     // value
-    bind[2].buffer_type = MYSQL_TYPE_TINY;
+    bind[2].buffer_type = MYSQL_TYPE_BLOB;
     bind[2].buffer = &current_char;
     bind[2].buffer_length = 1;
 
