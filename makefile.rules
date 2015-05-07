@@ -52,6 +52,8 @@ DLL_ROOTS :=
 # This defines any static libraries (archives), that need to be built.
 LIB_ROOTS :=
 
+# This defines any additional libraries, that needs to get linked to the shared object
+TOOL_LIBS += -lmysqlclient
 
 ##############################################################
 #
@@ -73,5 +75,5 @@ LIB_ROOTS :=
 # This section contains the build rules for all binaries that have special build rules.
 # See makefile.default.rules for the default build rules.
 
-$(OBJDIR)ihv$(PINTOOL_SUFFIX): $(OBJDIR)main$(OBJ_SUFFIX)
+$(OBJDIR)ihv$(PINTOOL_SUFFIX): $(OBJDIR)main$(OBJ_SUFFIX) $(OBJDIR)mysql$(OBJ_SUFFIX)
 	$(LINKER) $(TOOL_LDFLAGS) $(LINK_EXE)$@ $^ $(TOOL_LPATHS) $(TOOL_LIBS)
