@@ -7,7 +7,7 @@ typedef unsigned int snapshot_t;
 
 namespace snapshot_reason{
     enum type_t{
-        MALLOC, FREE, CALLOC, REALLOC
+        MALLOC, FREE, CALLOC, REALLOC, MEM_WRITE
     };
 };
 
