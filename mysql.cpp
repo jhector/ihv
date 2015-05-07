@@ -22,7 +22,8 @@ const char *query_add_reason_calloc =
     " VALUES (?, ?, ?, ?);";
 
 const char *query_add_reason_realloc =
-    "INSERT INTO reason_realloc(snapshot_id, old_address, new_address, size);";
+    "INSERT INTO reason_realloc(snapshot_id, old_address, new_address, size)"
+    " VALUES (?, ?, ?, ?);";
 
 const char *query_add_memory_write =
     "INSERT INTO memory_write(snapshot_id, address, value) VALUES (?, ?, ?);";
@@ -36,17 +37,25 @@ const char *query_free_block =
 
 
 // Raise an exception in the case of an error
-void fatal_error(MYSQL *db)
+void fatal_error(MYSQL *db, int line)
 {
-    std::cerr << "[FATAL] MySQL error: " << mysql_error(db) << std::endl;
+    std::cerr << "[FATAL] MySQL error at " << line << ": " << mysql_error(db) << std::endl;
     throw std::runtime_error(mysql_error(db));
 }
 
 MySQL::MySQL(
     const char *host, const char *user, const char *password, const char *db)
 {
+    // Init mysql
+    if (mysql_library_init(0, NULL, NULL)) {
+        printf("[FATAL] mysql_library_init failed\n");
+        throw std::runtime_error("mysql_library_init failed");
+    }
+
+    db_ = mysql_init(NULL);
+
     if (!mysql_real_connect(db_, host, user, password, db, 0, NULL, 0))
-            fatal_error(db_);
+            fatal_error(db_, __LINE__);
 
     // Initialize prepared statements
     add_snapshot_ = mysql_stmt_init(db_);
@@ -58,44 +67,44 @@ MySQL::MySQL(
     create_new_block_ = mysql_stmt_init(db_);
     free_block_ = mysql_stmt_init(db_);
 
-    if(!add_snapshot_ || !mysql_stmt_prepare(
+    if(!add_snapshot_ || mysql_stmt_prepare(
             add_snapshot_, query_add_snapshot, strlen(query_add_snapshot)))
-        fatal_error(db_);
+        fatal_error(db_, __LINE__);
 
-    if(!add_reason_malloc_ || !mysql_stmt_prepare(
+    if(!add_reason_malloc_ || mysql_stmt_prepare(
             add_reason_malloc_, query_add_reason_malloc,
             strlen(query_add_reason_malloc)))
-        fatal_error(db_);
+        fatal_error(db_, __LINE__);
 
-    if(!add_reason_free_ || !mysql_stmt_prepare(
+    if(!add_reason_free_ || mysql_stmt_prepare(
             add_reason_free_, query_add_reason_free,
             strlen(query_add_reason_free)))
-        fatal_error(db_);
+        fatal_error(db_, __LINE__);
 
-    if(!add_reason_calloc_ || !mysql_stmt_prepare(
+    if(!add_reason_calloc_ || mysql_stmt_prepare(
             add_reason_calloc_, query_add_reason_calloc,
             strlen(query_add_reason_calloc)))
-        fatal_error(db_);
+        fatal_error(db_, __LINE__);
 
-    if(!add_reason_realloc_ || !mysql_stmt_prepare(
+    if(!add_reason_realloc_ || mysql_stmt_prepare(
             add_reason_realloc_, query_add_reason_realloc,
             strlen(query_add_reason_realloc)))
-        fatal_error(db_);
+        fatal_error(db_, __LINE__);
 
-    if(!add_memory_write_ || !mysql_stmt_prepare(
+    if(!add_memory_write_ || mysql_stmt_prepare(
             add_memory_write_, query_add_memory_write,
             strlen(query_add_memory_write)))
-        fatal_error(db_);
+        fatal_error(db_, __LINE__);
 
-    if(!create_new_block_ || !mysql_stmt_prepare(
+    if(!create_new_block_ || mysql_stmt_prepare(
         create_new_block_, query_create_new_block,
             strlen(query_create_new_block)))
-        fatal_error(db_);
+        fatal_error(db_, __LINE__);
 
-    if(!free_block_ || !mysql_stmt_prepare(
+    if(!free_block_ || mysql_stmt_prepare(
         free_block_, query_free_block,
             strlen(query_free_block)))
-        fatal_error(db_);
+        fatal_error(db_, __LINE__);
 }
 
 MySQL::~MySQL()
@@ -120,7 +129,7 @@ snapshot_t MySQL::addSnapshot(snapshot_reason::type_t type)
 
     if (mysql_stmt_bind_param(add_snapshot_, &bind) ||
             mysql_stmt_execute(add_snapshot_))
-        fatal_error(db_);
+        fatal_error(db_, __LINE__);
 
     return mysql_insert_id(db_);
 }
@@ -147,7 +156,7 @@ void MySQL::addReasonMalloc(snapshot_t snapshot_id, void *mem, size_t size)
 
     if (mysql_stmt_bind_param(add_reason_malloc_, bind) ||
             mysql_stmt_execute(add_reason_malloc_))
-        fatal_error(db_);
+        fatal_error(db_, __LINE__);
 
     // Create new block
     createNewBlock(snapshot_id, mem, size);
@@ -171,7 +180,7 @@ void MySQL::addReasonFree(snapshot_t snapshot_id, void *mem)
 
     if (mysql_stmt_bind_param(add_reason_free_, bind) ||
             mysql_stmt_execute(add_reason_free_))
-        fatal_error(db_);
+        fatal_error(db_, __LINE__);
 
     // Free block
     if(mem)
@@ -206,7 +215,7 @@ void MySQL::addReasonCalloc(
 
     if (mysql_stmt_bind_param(add_reason_malloc_, bind) ||
             mysql_stmt_execute(add_reason_malloc_))
-        fatal_error(db_);
+        fatal_error(db_, __LINE__);
 
     // Create new block
     createNewBlock(snapshot_id, mem, nmemb * size);
@@ -240,7 +249,7 @@ void MySQL::addReasonRealloc(
 
     if (mysql_stmt_bind_param(add_reason_malloc_, bind) ||
             mysql_stmt_execute(add_reason_malloc_))
-        fatal_error(db_);
+        fatal_error(db_, __LINE__);
 
     // Realloc has a special logic. If new_size is equal to zero, a free
     // is performed.
@@ -284,7 +293,7 @@ void MySQL::addMemoryWrites(
         current_char = it -> second;
         if (mysql_stmt_bind_param(add_reason_malloc_, bind) ||
                     mysql_stmt_execute(add_reason_malloc_))
-                fatal_error(db_);
+                fatal_error(db_, __LINE__);
     }
 }
 
@@ -310,7 +319,7 @@ void MySQL::createNewBlock(snapshot_t snapshot_id, void *address, size_t size)
 
     if (mysql_stmt_bind_param(add_reason_malloc_, bind) ||
             mysql_stmt_execute(add_reason_malloc_))
-        fatal_error(db_);
+        fatal_error(db_, __LINE__);
 }
 
 void MySQL::freeBlock(snapshot_t snapshot_id, void *address)
@@ -330,5 +339,5 @@ void MySQL::freeBlock(snapshot_t snapshot_id, void *address)
 
     if (mysql_stmt_bind_param(add_reason_malloc_, bind) ||
             mysql_stmt_execute(add_reason_malloc_))
-        fatal_error(db_);
+        fatal_error(db_, __LINE__);
 }
