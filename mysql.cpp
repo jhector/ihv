@@ -48,7 +48,7 @@ MySQL::MySQL(
 {
     // Init mysql
     if (mysql_library_init(0, NULL, NULL)) {
-        printf("[FATAL] mysql_library_init failed\n");
+        std::cerr << "[FATAL] mysql_library_init failed" << std::endl;
         throw std::runtime_error("mysql_library_init failed");
     }
 
