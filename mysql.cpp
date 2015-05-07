@@ -33,7 +33,7 @@ const char *query_create_new_block =
 
 const char *query_free_block =
     "UPDATE block SET free_snapshot_id = ? WHERE address = ?"
-    " AND free_snapshot_id = NULL";
+    " AND free_snapshot_id IS NULL;";
 
 
 // Raise an exception in the case of an error
