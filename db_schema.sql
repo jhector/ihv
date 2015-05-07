@@ -11,7 +11,7 @@ DROP TABLE IF EXISTS `snapshot`;
 CREATE TABLE `snapshot` (
     `snapshot_id` INT(11) unsigned NOT NULL AUTO_INCREMENT,
     `time` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    `reason` INT(1) unsigned NOT NULL,  -- To know in which table we have to look in
+    `reason` ENUM('malloc', 'free', 'calloc', 'realloc', 'mem_write'),  -- To know in which table we have to look in
     PRIMARY KEY (`snapshot_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=UTF8;
 
