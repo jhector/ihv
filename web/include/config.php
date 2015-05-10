@@ -15,4 +15,5 @@ $config['database_handler'] = array(
 // Available asset classes
 $config['assets'] = array(
     'Snapshot',
+    'Block',
 );

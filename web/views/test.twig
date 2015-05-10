@@ -10,4 +10,29 @@
 </tr>
 {% endfor %}
 </table>
+<br />
+<table>
+<tr>
+<th>id</th>
+<th>start</th>
+<th>real size</th>
+<th>end</th>
+<th>user address</th>
+<th>user size</th>
+<th>alloc id</th>
+<th>free id</th>
+</tr>
+{% for block in blocks %}
+<tr>
+<td>{{ block.id }}</td>
+<td>{{ block.real_address}}</td>
+<td>{{ block.real_size }}</td>
+<td>{{ block.real_address + block.real_size }}</td>
+<td>{{ block.usr_address }}</td>
+<td>{{ block.usr_size }}</td>
+<td>{{ block.alloc_snapshot_id }}</td>
+<td>{{ block.free_snapshot_id }}</td>
+</tr>
+{% endfor %}
+</table>
 {% endblock %}
