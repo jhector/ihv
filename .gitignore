@@ -20,6 +20,9 @@
 *.app
 *.hex
 
+# web interface
+web/vendor
+
 # Custom
 *.swp
 *.log
