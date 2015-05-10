@@ -5,8 +5,9 @@ class BaseController
     protected $site;
     protected $vars;
     protected $viewer;
+    protected $db;
 
-    public function __construct($viewer)
+    public function __construct($viewer, Database $db)
     {
         if (isset($_REQUEST['action']))
             $this->action = strtolower($_REQUEST['action']) . 'Action';
@@ -20,6 +21,7 @@ class BaseController
 
         $this->vars = array();
         $this->viewer = $viewer;
+        $this->db = $db;
     }
 
     public function run()

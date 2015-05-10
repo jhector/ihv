@@ -16,7 +16,17 @@ try {
             throw new Exception('Controller: ' . $controller . ' missing');
     }
 
-    $front = new DefaultController($viewer);
+    foreach ($config['database_handler'] as $db_handler) {
+        $path = __DIR__ . '/database/' . $db_handler . '.php';
+        if (file_exists($path))
+            include($path);
+        else
+            throw new Exception('Database handler: ' . $db_handler. ' missing');
+    }
+
+    $db = new MySQL('localhost', 'root', 'root', 'ihv');
+
+    $front = new DefaultController($viewer, $db);
     $controller = ucfirst(strtolower($_REQUEST['site'])) . 'Controller';
 
     if (class_exists($controller))
