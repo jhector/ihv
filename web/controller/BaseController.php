@@ -34,4 +34,12 @@ class BaseController
                     $this->action);
         }
     }
+
+    protected function render()
+    {
+        $template = $this->viewer->loadTemplate($this->site . '.twig');
+        echo $template->render($this->vars);
+
+        exit(0);
+    }
 }

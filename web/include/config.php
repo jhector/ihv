@@ -2,11 +2,17 @@
 // Available controllers
 $config['controllers'] = array(
     'BaseController',
-    'DefaultController'
+    'DefaultController',
+    'TestController',
 );
 
 // Available database handler
 $config['database_handler'] = array(
     'Database',
-    'MySQL'
+    'MySQL',
+);
+
+// Available asset classes
+$config['assets'] = array(
+    'Snapshot',
 );

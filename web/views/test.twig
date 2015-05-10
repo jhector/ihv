@@ -1,0 +1,13 @@
+{% extends "base.twig" %}
+
+{% block body %}
+<table>
+{% for snapshot in snapshots %}
+<tr>
+<td>{{ snapshot.id }}</td>
+<td>{{ snapshot.time }}</td>
+<td>{{ snapshot.reason }}</td>
+</tr>
+{% endfor %}
+</table>
+{% endblock %}

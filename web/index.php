@@ -1,5 +1,5 @@
 <?php
-error_reporting(E_ALL);
+error_reporting(E_ALL & ~E_NOTICE);
 
 require_once __DIR__ . '/vendor/autoload.php';
 require_once __DIR__ . '/include/config.php';
@@ -24,13 +24,21 @@ try {
             throw new Exception('Database handler: ' . $db_handler. ' missing');
     }
 
+    foreach ($config['assets'] as $asset) {
+        $path = __DIR__ . '/assets/' . $asset. '.php';
+        if (file_exists($path))
+            include($path);
+        else
+            throw new Exception('Asset class: ' . $asset. ' missing');
+    }
+
     $db = new MySQL('localhost', 'root', 'root', 'ihv');
 
     $front = new DefaultController($viewer, $db);
     $controller = ucfirst(strtolower($_REQUEST['site'])) . 'Controller';
 
     if (class_exists($controller))
-        $front = new $controller($viewer);
+        $front = new $controller($viewer, $db);
 
     $front->run();
 } catch (Exception $e) {
